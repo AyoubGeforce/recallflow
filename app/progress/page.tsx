@@ -12,7 +12,7 @@ export default function ProgressPage() {
       </h2>
 
       <p className="mt-3 text-zinc-400">
-        Suis l'évolution de ta maîtrise des différentes notions.
+      Suis l&apos;évolution de ta maîtrise des différentes notions.
       </p>
 
       <div className="mt-10 grid gap-5 md:grid-cols-2">
