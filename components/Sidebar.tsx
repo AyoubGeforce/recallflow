@@ -1,41 +1,7 @@
+"use client";
 import Link from "next/link";
-
-export default function Sidebar() {
-  return (
-    <aside className="w-64 border-r border-zinc-800 p-6">
-      <h1 className="mb-10 text-2xl font-bold">
-        RecallFlow
-      </h1>
-
-      <nav className="flex flex-col gap-3">
-        <Link
-          href="/"
-          className="rounded-lg bg-zinc-800 px-4 py-3"
-        >
-          Dashboard
-        </Link>
-
-        <Link
-          href="/courses"
-          className="rounded-lg px-4 py-3 hover:bg-zinc-900"
-        >
-          Mes cours
-        </Link>
-
-        <Link
-          href="/study"
-          className="rounded-lg px-4 py-3 hover:bg-zinc-900"
-        >
-          Réviser
-        </Link>
-
-        <Link
-          href="/progress"
-          className="rounded-lg px-4 py-3 hover:bg-zinc-900"
-        >
-          Progression
-        </Link>
-      </nav>
-    </aside>
-  );
-}
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+const links = [{ href: "/", label: "Accueil" }, { href: "/courses", label: "Mes cours" }, { href: "/study", label: "Réviser" }, { href: "/progress", label: "Progression" }];
+export default function Sidebar() { const pathname=usePathname(); const router=useRouter(); const[email,setEmail]=useState<string|null>(null); const[supabase]=useState(()=>createClient()); useEffect(()=>{if(pathname==="/login"||pathname==="/signup")return; supabase.auth.getUser().then(({data})=>setEmail(data.user?.email??null)); const{data:listener}=supabase.auth.onAuthStateChange((_event,session)=>setEmail(session?.user?.email??null)); return()=>listener.subscription.unsubscribe();},[pathname,supabase]); if(pathname==="/login"||pathname==="/signup")return null; async function logout(){await supabase.auth.signOut();router.push("/login");router.refresh();} return <aside className="w-full shrink-0 border-b border-white/10 bg-slate-950/60 p-4 backdrop-blur lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r lg:p-6"><div className="flex items-center justify-between gap-4 lg:block"><Link href="/" className="text-2xl font-black tracking-tight">Recall<span className="text-cyan-300">Flow</span></Link><span className="hidden text-xs text-slate-500 lg:block">Mémorise mieux, chaque jour.</span></div><nav aria-label="Navigation principale" className="mt-5 flex gap-2 overflow-x-auto lg:mt-10 lg:flex-col">{links.map(link=>{const active=link.href==="/"?pathname==="/":pathname.startsWith(link.href);return <Link key={link.href} href={link.href} aria-current={active?"page":undefined} className={`whitespace-nowrap rounded-xl px-4 py-3 text-sm font-semibold ${active?"bg-violet-500/20 text-violet-100 ring-1 ring-violet-300/20":"text-slate-400 hover:bg-white/5 hover:text-white"}`}>{link.label}</Link>})}</nav>{email&&<div className="mt-5 flex items-center justify-between gap-3 border-t border-white/10 pt-5 lg:mt-10 lg:block"><p className="truncate text-xs text-slate-500" title={email}>{email}</p><button onClick={logout} className="text-xs text-slate-300 underline hover:text-white">Se déconnecter</button></div>}</aside>; }

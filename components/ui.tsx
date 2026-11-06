@@ -1,0 +1,11 @@
+import type { ButtonHTMLAttributes, HTMLAttributes, InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+
+export function Button({ variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost" }) {
+  const styles = { primary: "bg-violet-500 text-white hover:bg-violet-400", secondary: "border border-cyan-400/40 bg-cyan-400/10 text-cyan-100 hover:bg-cyan-400/20", danger: "border border-rose-500/40 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20", ghost: "text-slate-300 hover:bg-white/10" };
+  return <button {...props} className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-50 ${styles[variant]} ${className}`} />;
+}
+
+export function Panel({ children, className = "", ...props }: HTMLAttributes<HTMLDivElement> & { children: ReactNode; className?: string }) { return <div {...props} className={`rounded-2xl border border-white/10 bg-slate-900/80 shadow-2xl shadow-slate-950/30 ${className}`}>{children}</div>; }
+export function Badge({ children, tone = "violet" }: { children: ReactNode; tone?: "violet" | "cyan" | "slate" | "rose" }) { const styles = { violet: "bg-violet-400/15 text-violet-200", cyan: "bg-cyan-400/15 text-cyan-200", slate: "bg-white/10 text-slate-300", rose: "bg-rose-400/15 text-rose-200" }; return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${styles[tone]}`}>{children}</span>; }
+export function TextField(props: InputHTMLAttributes<HTMLInputElement>) { return <input {...props} className={`w-full rounded-xl border border-white/10 bg-slate-950/70 px-3.5 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none focus:ring-2 focus:ring-cyan-300/20 ${props.className ?? ""}`} />; }
+export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) { return <textarea {...props} className={`w-full rounded-xl border border-white/10 bg-slate-950/70 px-3.5 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-300/70 focus:outline-none focus:ring-2 focus:ring-cyan-300/20 ${props.className ?? ""}`} />; }

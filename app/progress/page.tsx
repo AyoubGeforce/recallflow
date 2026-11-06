@@ -1,24 +1,11 @@
-import StatCard from "@/components/StatCard";
-
-export default function ProgressPage() {
-  return (
-    <section>
-      <p className="mb-2 text-sm text-zinc-400">
-        Progression
-      </p>
-
-      <h2 className="text-4xl font-bold">
-        Ta progression
-      </h2>
-
-      <p className="mt-3 text-zinc-400">
-      Suis l&apos;évolution de ta maîtrise des différentes notions.
-      </p>
-
-      <div className="mt-10 grid gap-5 md:grid-cols-2">
-        <StatCard title="Notions maîtrisées" value={0} />
-        <StatCard title="À retravailler" value={0} />
-      </div>
-    </section>
-  );
-}
+import Link from "next/link";
+import { Suspense } from "react";
+import { connection } from "next/server";
+import { requireUser } from "@/lib/supabase/auth";
+import { createClient } from "@/lib/supabase/server";
+import { Badge, Panel } from "@/components/ui";
+export const instant = false;
+export default function ProgressPage() { return <Suspense fallback={<ProgressFallback />}><ProgressContent /></Suspense>; }
+async function ProgressContent() { await connection(); await requireUser(); const supabase=await createClient(); const [responses,totalCards]=await Promise.all([supabase.from("review_responses").select("rating,responded_at").order("responded_at",{ascending:false}),supabase.from("flashcards").select("id",{count:"exact",head:true})]); const rows=responses.data??[]; const counts={again:0,hard:0,good:0,easy:0}; rows.forEach(row=>{if(row.rating in counts)counts[row.rating as keyof typeof counts]++;}); return <section className="space-y-8"><header><Badge tone="violet">Historique</Badge><h1 className="mt-3 text-4xl font-bold">Ta progression</h1><p className="mt-2 max-w-2xl text-slate-400">Cet historique décrit tes évaluations de révision. Il ne mesure pas à lui seul ta compréhension ou ta capacité d’application.</p></header><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5"><Metric label="Réponses" value={rows.length}/><Metric label="À revoir" value={counts.again}/><Metric label="Difficile" value={counts.hard}/><Metric label="Bien" value={counts.good}/><Metric label="Facile" value={counts.easy}/></div>{rows.length===0?<Panel className="p-10 text-center"><h2 className="text-xl font-bold">Pas encore d’historique</h2><p className="mt-2 text-slate-400">Révise quelques cartes pour voir apparaître tes résultats.</p><Link href="/study" className="mt-5 inline-block text-cyan-300 underline">Commencer une révision</Link></Panel>:<Panel className="p-6"><div className="flex items-center justify-between"><h2 className="text-xl font-bold">Révisions récentes</h2><span className="text-sm text-slate-500">{totalCards.count??0} cartes au total</span></div><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{Object.entries(counts).map(([rating,count])=><div key={rating} className="rounded-xl bg-white/[0.04] p-4"><p className="text-sm capitalize text-slate-400">{rating}</p><p className="mt-1 text-2xl font-bold">{count}</p></div>)}</div><ul className="mt-6 divide-y divide-white/10">{rows.slice(0,20).map((row,index)=><li key={`${row.responded_at}-${index}`} className="flex justify-between py-3 text-sm"><span className="capitalize text-slate-300">{row.rating === "again" ? "À revoir" : row.rating}</span><time className="text-slate-500">{new Date(row.responded_at).toLocaleString("fr-CA")}</time></li>)}</ul></Panel>}</section>; }
+function ProgressFallback() { return <section className="space-y-8" aria-label="Chargement de la progression"><div className="h-24 animate-pulse rounded-2xl bg-white/[0.04]"/><div className="h-40 animate-pulse rounded-2xl bg-white/[0.04]"/></section>; }
+function Metric({label,value}:{label:string;value:number}){return <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5"><p className="text-sm text-slate-400">{label}</p><p className="mt-2 text-3xl font-bold">{value}</p></div>}
